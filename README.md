@@ -36,3 +36,16 @@ python -X utf8 Upcoming.py --test-excel upcoming_sample.xlsx
 ```
 
 Set `RUN_SCHEDULED=true` to keep the process running and execute daily at 04:30 New York time.
+
+## GitHub Actions
+
+`.github/workflows/upcoming.yml` runs daily at 04:30 America/New_York and supports manual runs from Actions > Update Upcoming > Run workflow. Scheduled starts can be delayed by GitHub.
+
+Before running, add repository secrets under Settings > Secrets and variables > Actions:
+
+- `WEBPT_USERNAME`
+- `WEBPT_PASSWORD`
+- `GOOGLE_SHEET_ID`
+- `GOOGLE_SERVICE_ACCOUNT_JSON`: the full contents of your service account JSON key.
+
+The workflow runs Chrome headlessly and updates only Upcoming. It does not upload exported patient data or screenshots as artifacts.

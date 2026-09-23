@@ -1,0 +1,42 @@
+name: Update Upcoming
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * *'
+      timezone: America/New_York
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upcoming-google-sheet
+  cancel-in-progress: false
+
+jobs:
+  update-upcoming:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Update Upcoming sheet
+        env:
+          WEBPT_USERNAME: ${{ secrets.WEBPT_USERNAME }}
+          WEBPT_PASSWORD: ${{ secrets.WEBPT_PASSWORD }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          HEADLESS: 'true'
+          RUN_SCHEDULED: 'false'
+          PYTHONUNBUFFERED: '1'
+        run: python -X utf8 Upcoming.py
