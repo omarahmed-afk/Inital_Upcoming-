@@ -27,6 +27,8 @@ import time
 import shutil
 import csv
 import json
+import re
+from urllib.parse import urlparse
 import tempfile
 from datetime import datetime, timedelta
 import gspread
@@ -95,6 +97,20 @@ DOWNLOAD_DIR = tempfile.mkdtemp()
 driver = None
 
 
+def normalize_sheet_id(value):
+    """Accept a spreadsheet ID or standard Sheets URL without exposing secrets."""
+    value = value.strip().strip("\"'").strip()
+    if value.startswith(("https://", "http://")):
+        parsed = urlparse(value)
+        match = re.fullmatch(r"/spreadsheets/(?:u/\d+/)?d/([A-Za-z0-9_-]+)(?:/.*)?", parsed.path)
+        if parsed.hostname != "docs.google.com" or not match or match.group(1) == "e":
+            raise RuntimeError("GOOGLE_SHEET_ID must be a spreadsheet ID or a docs.google.com/spreadsheets/d/... URL")
+        value = match.group(1)
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", value) or value.isdigit() or value == "PASTE_GOOGLE_SHEET_ID_HERE":
+        raise RuntimeError("Invalid GOOGLE_SHEET_ID: use the spreadsheet ID between /d/ and /edit, not the tab gid")
+    return value
+
+
 def validate_configuration():
     missing = [
         name
@@ -111,6 +127,7 @@ def validate_configuration():
         missing.append("GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SERVICE_ACCOUNT_FILE")
     if missing:
         raise RuntimeError("Missing required environment variable(s): " + ", ".join(missing))
+    normalize_sheet_id(GOOGLE_SHEET_ID)
 
 
 # ── Logging ────────────────────────────────────────────────────
@@ -683,6 +700,7 @@ def _write_google_tab(spreadsheet, tab_name, values):
 
 def write_google_sheet_tabs(rows):
     """Refresh Upcoming only; do not write to any other worksheet."""
+    sheet_id = normalize_sheet_id(GOOGLE_SHEET_ID)
     if GOOGLE_SHEET_ID in ("", "PASTE_GOOGLE_SHEET_ID_HERE"):
         raise RuntimeError("Set GOOGLE_SHEET_ID before running the script")
     if not rows:
@@ -714,7 +732,7 @@ def write_google_sheet_tabs(rows):
                 f"{GOOGLE_SERVICE_ACCOUNT_FILE}"
             )
         client = gspread.service_account(filename=GOOGLE_SERVICE_ACCOUNT_FILE)
-    spreadsheet = client.open_by_key(GOOGLE_SHEET_ID)
+    spreadsheet = client.open_by_key(sheet_id)
 
     _write_upcoming_tab(spreadsheet, upcoming_values)
     return upcoming_values

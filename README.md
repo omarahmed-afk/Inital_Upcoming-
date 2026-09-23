@@ -18,7 +18,7 @@ Set these environment variables locally:
 
 - `WEBPT_USERNAME`
 - `WEBPT_PASSWORD`
-- `GOOGLE_SHEET_ID`
+- `GOOGLE_SHEET_ID` (spreadsheet ID or full Google Sheets URL; not the tab gid)
 - `GOOGLE_SERVICE_ACCOUNT_FILE` (path to your service account JSON key)
 
 The exported report must include Patient ID, Clinic Name, Patient Name, Treating Therapist, Case Therapist, Appointment Type, Appointment Date, and Visit Status.
