@@ -2,9 +2,6 @@ name: Update Upcoming
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '30 4 * * *'
-      timezone: America/New_York
 
 permissions:
   contents: read

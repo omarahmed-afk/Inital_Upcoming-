@@ -39,7 +39,7 @@ Set `RUN_SCHEDULED=true` to keep the process running and execute daily at 04:30 
 
 ## GitHub Actions
 
-`.github/workflows/upcoming.yml` runs daily at 04:30 America/New_York and supports manual runs from Actions > Update Upcoming > Run workflow. Scheduled starts can be delayed by GitHub.
+`.github/workflows/upcoming.yml` runs manually only, from Actions > Update Upcoming > Run workflow. No automatic schedule is configured.
 
 Before running, add repository secrets under Settings > Secrets and variables > Actions:
 
